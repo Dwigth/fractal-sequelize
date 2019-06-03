@@ -18,5 +18,6 @@
   "bugs": {
     "url": "https://github.com/Dwigth/fractal-sequelize-template/issues"
   },
-  "homepage": "https://github.com/Dwigth/fractal-sequelize-template#readme"
+  "homepage": "https://github.com/Dwigth/fractal-sequelize-template#readme",
+  "dependencies": {}
 }

@@ -1,13 +1,12 @@
 #!/usr/bin/env node
-//execute the code of cli here e.g
 /**
  * @author: Dwigth Astacio Hernández
  * @version: 0.0.2
  * @description: Generador de proyecto, clases e interfaces para sequelize-typescript
- * Input: [0][accion]               |Necesario
- *        [0][nomber_modulo]        |Necesario
- *        [1][nombre_clase_ORM]     |Necesario
- *        [2][nombre_interfaz]      |Opcional 
+ * Input: [0][accion]                        |Necesario
+ *        [1][tipo]                          |Necesario
+ *        [2][nomber_modulo/Proyecto]        |Necesario
+ *        [3][opciones]
  * 
  * Directorio actual:       '**\app\util'
  * Directorio modelos ORM:  '**\app\orm\'
@@ -21,17 +20,19 @@
  * @todo: Si ya existe la interfaz copiar su contendio.
  * @todo: Permitir agregar contenido de la interfaz.
  * @todo: Agregar modelo al arreglo de modelos en el archivo index de cada módulo.
- * @example npm run gen agenda AG_NOTIFICACIONES 
+ * @todo: agregar archivos server, instalar orm, etc.
+ * @example npm run gen agenda AG_NOTIFICACIONES
+ * @example frctl nuevo notificaciones-api / frctl generar clase notificaciones[/]
  */
 
-import fs from 'fs';
 import { Generador } from "./util/gen";
+
 //Obtenener input
 const args = process.argv.slice(2);
 //obtener directorio actual
 const gen = new Generador(args);
 // let cdir: string = __dirname;
-// //directorio app
+// directorio app
 // let appDir = cdir.substring(0, cdir.length - 5);
 
 // var target = "dist";

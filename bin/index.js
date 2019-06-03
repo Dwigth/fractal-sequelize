@@ -7,7 +7,7 @@ var args = process.argv.slice(2);
 //obtener directorio actual
 var gen = new gen_1.Generador(args);
 // let cdir: string = __dirname;
-// //directorio app
+// directorio app
 // let appDir = cdir.substring(0, cdir.length - 5);
 // var target = "dist";
 // var found = appDir.search(target);
