@@ -1,6 +1,9 @@
 import fs from "fs";
 import { exec } from 'child_process';
+import { Clases } from "../util/clases";
 const version = '0.0.3';
+
+export let nombreProyecto = '';
 
 export class Generador {
     argumentos: Array<string>;
@@ -76,11 +79,13 @@ export class Generador {
     determinarAccion(accion: string) {
         if (accion === 'nuevo') {
             this.nombreProyecto = this.argumentos[1];
+            nombreProyecto = this.nombreProyecto;
             this.dirProyecto = `${this.dirActual}/${this.nombreProyecto}`;
             this.generarProyecto();
             this.generarPackage();
             this.iniciarGit();
             this.generarArchivosFRCTL();
+            // this.descargarDependencias(this.modulosNPM);
         } else if (accion === 'generar') {
             this.tipo = this.argumentos[1];
             this.nombreTipo = this.argumentos[2];
@@ -91,12 +96,27 @@ export class Generador {
     }
 
     escrituraSegura(dir: string, nombre: string, ext: string, data: any) {
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
-            fs.writeFileSync(`${dir}/${nombre}.${ext}`, data);
-        } else {
-            fs.writeFileSync(`${dir}/${nombre}.${ext}`, data);
+        try {
+            if (!fs.existsSync(`${this.dirActual}/${this.nombreProyecto}${dir}`)) {
+                fs.mkdirSync(`${this.dirActual}/${this.nombreProyecto}${dir}`);
+                fs.writeFile(`${this.dirActual}/${this.nombreProyecto}${dir}/${nombre}.${ext}`, data, function (err) {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    console.log(`${dir}/${nombre}.${ext} ¡creado!`);
+                });
+            } else {
+                fs.writeFile(`${this.dirActual}/${this.nombreProyecto}${dir}/${nombre}.${ext}`, data, function (err) {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    console.log(`${dir}/${nombre}.${ext} ¡creado!`);
+                });
+            }
+        } catch (error) {
+            console.log(error)
         }
+
     }
 
     /**
@@ -119,92 +139,11 @@ export class Generador {
             fechaIni: Date.now(),
             version: version
         }));
-        //se crea el archivo de servidor
-        fs.writeFileSync(this.dirProyecto + '/app/server.ts', `
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import requestIp from 'request-ip';
-import { config } from '../config/config.dev';
-import { bootstrapRoutes } from './routes/init-routes.module';
-import ORM from './orm/orm.module';
-import http from 'http';
-import https from 'https';
-const app = express();
-    app.use(express.json({limit: '50mb'}));
-    app.use(express.urlencoded({limit: '50mb'}));
-    app.use('/static' ,express.static('public'));
-//inicializador de rutas
+        //se crean los otros archivos
+        Clases.map(clase => {
+            this.escrituraSegura(clase.direccion, clase.clase, clase.ext, clase.contenido);
+        });
 
-const orm = new ORM();
-//middlewares que se ejecutarán antes de las peticiones
-app.use(cors());
-app.use(helmet());
-app.use(requestIp.mw());
-// app.use(compression());
-bootstrapRoutes(app);
-const server = http.createServer(app);
-server.listen(config.PORT);
-        `);
-        //archivo de modulo de ORM
-        fs.writeFileSync(this.dirProyecto + '/app/ORM/orm.module.ts', `        
-import { Sequelize, ISequelizeConfig } from 'sequelize-typescript';
-import { _CONFIG } from "../../config/db.dev";
-import { MODULE_CLASSES } from "./modulo/index";
-export default class ORM {
-    private static _instance: ORM;
-    public seql: Sequelize;
-    public config: ISequelizeConfig;
-    private modules: string[] = [];
-
-    constructor() {
-        this.config = _CONFIG;
-        this.seql = new Sequelize(this.config);
-        this.modules = this.modules.concat(
-            MODULE_CLASSES
-        );
-        this.seql.addModels(this.modules);
-    }
-
-    public static get instance() {
-        return this._instance || (this._instance = new this());
-    }
-}
-`);
-        //índice de clases
-        this.escrituraSegura(this.dirProyecto + '/app/ORM/modulo', 'index', 'ts', `
-//aqui irán tus clases
-export const MODULE_CLASSES: any[] = [];
-`);
-        //ruta
-        this.escrituraSegura(this.dirProyecto + '/app/routes/inicio', 'inicio.routes', 'ts', `
-import express, { Response, Request } from 'express';
-export const index_router = express.Router();
-
-index_router.get('/index',(req:Request,res:Response)=>{
-    res.json('¡Éxito!');
-});
-        `);
-        //archivo de rutas
-        this.escrituraSegura(this.dirProyecto + '/app/routes', 'init-routes.module', 'ts', `
-//parsers
-import bodyParser from "body-parser";
-import index_router from "./inicio/inicio.routes";
-//interfaces
-import { Application, Request, Response } from 'express';
-const routes = [
-    index_router
-];
-export function bootstrapRoutes(app: Application) {
-    app.use(bodyParser.json()); // para application/json
-    app.use(bodyParser.urlencoded({ extended: true })); // para application/x-www-form-urlencoded
-    app.use(routes);
-
-    app.use('*', (req: Request, res: Response) => {
-        res.status(404).send();
-    });
-}
-`);
     }
 
 
@@ -234,9 +173,58 @@ export function bootstrapRoutes(app: Application) {
     "version": "0.0.1",
     "description": "",
     "main": "",
-    "scripts": {},
+    "scripts": {
+        "start": "nodemon dev/app/server.js",
+        "serve": "set SECRET=123456789 && npm start",
+    },
     "author": "",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "@types/bcrypt": "^3.0.0",
+        "@types/body-parser": "^1.17.0",
+        "@types/colors": "^1.2.1",
+        "@types/compression": "0.0.36",
+        "@types/cors": "^2.8.4",
+        "@types/express": "^4.17.0",
+        "@types/express-jwt": "0.0.41",
+        "@types/fs-extra": "^8.0.0",
+        "@types/helmet": "0.0.42",
+        "@types/html-pdf": "^2.1.2",
+        "@types/jsonwebtoken": "^8.3.0",
+        "@types/md5": "^2.1.33",
+        "@types/moment": "^2.13.0",
+        "@types/moment-timezone": "^0.5.10",
+        "@types/node": "^11.13.13",
+        "@types/node-schedule": "^1.2.3",
+        "@types/request-ip": "0.0.33",
+        "@types/sequelize": "^4.28.3",
+        "@types/socket.io": "^2.1.2",
+        "bcrypt": "^3.0.4",
+        "body-parser": "^1.18.3",
+        "colors": "^1.3.3",
+        "compression": "^1.7.4",
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "express-jwt": "^5.3.1",
+        "express-pdf": "^1.2.2",
+        "fs-extra": "^8.0.1",
+        "helmet": "^3.18.0",
+        "jsonwebtoken": "^8.4.0",
+        "md5": "^2.2.1",
+        "moment": "^2.24.0",
+        "moment-timezone": "^0.5.23",
+        "node-schedule": "^1.3.2",
+        "nodemon": "^1.19.1",
+        "pg": "^7.11.0",
+        "pg-hstore": "^2.3.3",
+        "reflect-metadata": "^0.1.13",
+        "request-ip": "^2.1.3",
+        "rootpath": "^0.1.2",
+        "sequelize": "^4.44.0",
+        "sequelize-cli": "^5.4.0",
+        "sequelize-typescript": "^0.6.11",
+        "var-clean": "^1.0.1"
+    }
 }`;
         try {
             fs.writeFileSync(`${this.dirActual}/${this.nombreProyecto}/package.json`, data);
@@ -246,6 +234,7 @@ export function bootstrapRoutes(app: Application) {
     }
     /**
      * Inicializa un repositorio local de Git.
+     * @todo agregar archivo .gitignore
      */
     iniciarGit() {
         exec(`git init ${this.nombreProyecto}`, (error, stdout, stderr) => {
@@ -257,4 +246,29 @@ export function bootstrapRoutes(app: Application) {
             console.log(`stderr: ${stderr}`);
         });
     }
+
+    async descargarDependencias(dependencias: Array<string>) {
+        try {
+            const arr_deps = dependencias.map(dep => {
+                return new Promise((resolve, reject) => {
+                    exec(`npm install ${dep}`, (error, stdout, stderr) => {
+                        if (error) {
+                            console.error(`exec error: ${error}`);
+                            reject(error);
+                        }
+                        resolve({ stdout, stderr });
+                        console.log(`stdout: ${stdout}`);
+                        console.log(`stderr: ${stderr}`);
+                    });
+                });
+            });
+            const resultado = await Promise.all(arr_deps);
+            console.log(resultado);
+        } catch (error) {
+            console.log(error);
+        }
+
+
+    }
+
 };
