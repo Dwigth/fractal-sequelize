@@ -1,11 +1,15 @@
 import fs from "fs";
 import { exec } from 'child_process';
+import readline from 'readline';
 import { Clases } from "../util/clases";
+import { Proyecto } from "fractal-sequelize-template-cli/interfaces/proyecto";
+import { EstilizarNombreClase } from "../util/util";
 const version = '0.0.3';
 
 export let nombreProyecto = '';
 
 export class Generador {
+    puedoCrear: boolean = false;
     argumentos: Array<string>;
     accion: string;
     nombreProyecto: string;
@@ -13,6 +17,7 @@ export class Generador {
     tipo: string;
     dirActual: string;
     dirProyecto: string;
+    moduloTipo: string;
     modulosNPM: Array<string> = [
         'moment',
         'nodemon',
@@ -49,7 +54,7 @@ export class Generador {
         this.argumentos = args;
         this.accion = args[0];
         this.dirActual = process.cwd();
-        this.determinarAccion(this.accion);
+        this.obtenerArchivoFRCTL();
     }
     /**
      * Bienvenida de CLI
@@ -76,9 +81,16 @@ export class Generador {
      * Determina la accion a tomar.
      * @param accion Accion dada por el usuario
      */
-    determinarAccion(accion: string) {
+    async determinarAccion(accion: string) {
         if (accion === 'nuevo') {
             this.nombreProyecto = this.argumentos[1];
+            if (!this.puedoCrear) {
+                console.log('Error: Ya se encuentra dentro de un proyecto FRACTAL.');
+                return;
+            } else if (this.nombreProyecto === undefined || this.nombreProyecto === '') {
+                console.log("Error: Nombre de proyecto no proporcionado");
+                return;
+            }
             nombreProyecto = this.nombreProyecto;
             this.dirProyecto = `${this.dirActual}/${this.nombreProyecto}`;
             this.generarProyecto();
@@ -88,31 +100,71 @@ export class Generador {
             // this.descargarDependencias(this.modulosNPM);
         } else if (accion === 'generar') {
             this.tipo = this.argumentos[1];
-            this.nombreTipo = this.argumentos[2];
-            this.generarClase();
+            this.moduloTipo = this.argumentos[2];
+            this.nombreTipo = this.argumentos[3];
+            if (this.tipo === 'clase') {
+                //hay que preguntarle si quisiera crear una interfaz junto a su clase ORM
+
+                const respuesta = await this.hacerPregunta('¿le gustaría crear una interfaz tambien? s/n \n');
+                if (respuesta === 's') {
+                    this.generarInterfaz();
+                }
+                console.log('Generando clase...');
+                this.generarClase();
+
+            } else if (this.tipo === 'interfaz') {
+                this.generarInterfaz();
+                console.log('Generando interfaz...');
+            } else if (this.tipo === 'modelo') {
+                this.generarInterfaz();
+                this.generarClaseORM();
+            }
         } else if (accion === 'ls') {
             console.log(process.cwd());
+        } else {
+            console.log('¿Qué acción le gustaría ejecutar?');
         }
+    }
+
+    hacerPregunta(query: string): Promise<string> {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+
+        return new Promise(resolve => rl.question(query, ans => {
+            rl.close();
+            resolve(ans);
+        }))
     }
 
     escrituraSegura(dir: string, nombre: string, ext: string, data: any) {
         try {
-            if (!fs.existsSync(`${this.dirActual}/${this.nombreProyecto}${dir}`)) {
-                fs.mkdirSync(`${this.dirActual}/${this.nombreProyecto}${dir}`);
-                fs.writeFile(`${this.dirActual}/${this.nombreProyecto}${dir}/${nombre}.${ext}`, data, function (err) {
+            //si no existe el proyecto
+            let cdir: string;
+            if (this.puedoCrear) {
+                cdir = `${this.dirActual}/${this.nombreProyecto}${dir}`;
+            } else {
+                cdir = `${this.dirActual}/${dir}`;
+            }
+
+            if (!fs.existsSync(`${cdir}`)) {
+                fs.mkdirSync(`${cdir}`);
+                fs.writeFile(`${cdir}/${nombre}.${ext}`, data, function (err) {
                     if (err) {
                         return console.log(err);
                     }
                     console.log(`${dir}/${nombre}.${ext} ¡creado!`);
                 });
             } else {
-                fs.writeFile(`${this.dirActual}/${this.nombreProyecto}${dir}/${nombre}.${ext}`, data, function (err) {
+                fs.writeFile(`${cdir}/${nombre}.${ext}`, data, function (err) {
                     if (err) {
                         return console.log(err);
                     }
                     console.log(`${dir}/${nombre}.${ext} ¡creado!`);
                 });
             }
+
         } catch (error) {
             console.log(error)
         }
@@ -130,6 +182,24 @@ export class Generador {
             });
         }
     }
+
+    obtenerArchivoFRCTL() {
+        try {
+            let proyecto: Proyecto = require(this.dirActual + '/frctl.json');
+            this.nombreProyecto = proyecto.proyecto;
+            console.log('Proyecto actual: ' + proyecto.proyecto);
+            this.determinarAccion(this.accion);
+        } catch (error) {
+            if (error.code == 'MODULE_NOT_FOUND') {
+                console.error("No existe un proyecto de FRACTAL en este directorio");
+                console.log('Use "frctl nuevo" para crear un proyecto.');
+                this.puedoCrear = true;
+                this.determinarAccion(this.accion);
+                return;
+            }
+        }
+    }
+
     /**
      * Genera un archivo JSON con información del proyecto
      */
@@ -148,20 +218,53 @@ export class Generador {
 
 
     /**
-     * Genera una clase
+     * Genera una clase CONTROLADOR
      */
     generarClase() {
-        const targetDir = 'dist';
+        //asignar direccion
+        const claseDir = `/app/actions/${this.moduloTipo}`;
+
+        let nombreClase = this.nombreTipo[0].toUpperCase() + this.nombreTipo.slice(1, this.nombreTipo.length).toLowerCase();
+
+        nombreClase = EstilizarNombreClase(nombreClase);
+
+        let dataClase = `
+export class ${nombreClase}Controller {
+    constructor() {};
+    // Agregar métodos
+}
+        `;
+        this.escrituraSegura(claseDir, this.nombreTipo + '.controller', 'ts', dataClase);
     }
 
     /**
      * Genera una clase del ORM sequelize-typescript
      */
-    genClaseORM() { }
+    generarClaseORM() {
+        const claseDir = `/app/orm/${this.moduloTipo}`;
+        const helperDir = `../../helpers/${this.moduloTipo}`;
+        let dataORM = `\n
+    import { Model, Table, Column, DataType } from "sequelize-typescript";
+    import { ${this.nombreTipo.toUpperCase()} } from '${helperDir}/${this.nombreTipo}';
+    @Table({
+        tableName:'${this.nombreTipo.toLowerCase()}'
+    })
+    export class M_${this.nombreTipo.toUpperCase()} extends Model<M_${this.nombreTipo.toUpperCase()}> implements ${this.nombreTipo.toUpperCase()} {}`;
+        this.escrituraSegura(claseDir, this.nombreTipo + '.model', 'ts', dataORM);
+    }
     /**
      * Genera una interfaz 
      */
-    genInterfaz() { }
+    generarInterfaz() {
+        const interfazDir = `/app/helpers/${this.moduloTipo}`;
+        let nombreInterfaz = this.nombreTipo.toUpperCase();
+        let dataInterfaz = `
+export interface ${nombreInterfaz}{
+
+}
+        `;
+        this.escrituraSegura(interfazDir, this.nombreTipo, 'ts', dataInterfaz);
+    }
 
     /**
      * Genera un archivo package.json
@@ -246,7 +349,11 @@ export class Generador {
             console.log(`stderr: ${stderr}`);
         });
     }
-
+    /**
+     * Crear un proceso para descargar las dependencias de node.
+     * @todo Hacer que funcione
+     * @param dependencias Arreglo de dependencias de NPM
+     */
     async descargarDependencias(dependencias: Array<string>) {
         try {
             const arr_deps = dependencias.map(dep => {

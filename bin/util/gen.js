@@ -40,7 +40,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = __importDefault(require("fs"));
 var child_process_1 = require("child_process");
+var readline_1 = __importDefault(require("readline"));
 var clases_1 = require("../util/clases");
+var util_1 = require("../util/util");
 var version = '0.0.3';
 exports.nombreProyecto = '';
 var Generador = /** @class */ (function () {
@@ -52,6 +54,7 @@ var Generador = /** @class */ (function () {
      * @param args
      */
     function Generador(args) {
+        this.puedoCrear = false;
         this.modulosNPM = [
             'moment',
             'nodemon',
@@ -80,7 +83,7 @@ var Generador = /** @class */ (function () {
         this.argumentos = args;
         this.accion = args[0];
         this.dirActual = process.cwd();
-        this.determinarAccion(this.accion);
+        this.obtenerArchivoFRCTL();
     }
     /**
      * Bienvenida de CLI
@@ -108,30 +111,90 @@ var Generador = /** @class */ (function () {
      * @param accion Accion dada por el usuario
      */
     Generador.prototype.determinarAccion = function (accion) {
-        if (accion === 'nuevo') {
-            this.nombreProyecto = this.argumentos[1];
-            exports.nombreProyecto = this.nombreProyecto;
-            this.dirProyecto = this.dirActual + "/" + this.nombreProyecto;
-            this.generarProyecto();
-            this.generarPackage();
-            this.iniciarGit();
-            this.generarArchivosFRCTL();
-            // this.descargarDependencias(this.modulosNPM);
-        }
-        else if (accion === 'generar') {
-            this.tipo = this.argumentos[1];
-            this.nombreTipo = this.argumentos[2];
-            this.generarClase();
-        }
-        else if (accion === 'ls') {
-            console.log(process.cwd());
-        }
+        return __awaiter(this, void 0, void 0, function () {
+            var respuesta;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(accion === 'nuevo')) return [3 /*break*/, 1];
+                        this.nombreProyecto = this.argumentos[1];
+                        if (!this.puedoCrear) {
+                            console.log('Error: Ya se encuentra dentro de un proyecto FRACTAL.');
+                            return [2 /*return*/];
+                        }
+                        else if (this.nombreProyecto === undefined || this.nombreProyecto === '') {
+                            console.log("Error: Nombre de proyecto no proporcionado");
+                            return [2 /*return*/];
+                        }
+                        exports.nombreProyecto = this.nombreProyecto;
+                        this.dirProyecto = this.dirActual + "/" + this.nombreProyecto;
+                        this.generarProyecto();
+                        this.generarPackage();
+                        this.iniciarGit();
+                        this.generarArchivosFRCTL();
+                        return [3 /*break*/, 6];
+                    case 1:
+                        if (!(accion === 'generar')) return [3 /*break*/, 5];
+                        this.tipo = this.argumentos[1];
+                        this.moduloTipo = this.argumentos[2];
+                        this.nombreTipo = this.argumentos[3];
+                        if (!(this.tipo === 'clase')) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.hacerPregunta('¿le gustaría crear una interfaz tambien? s/n \n')];
+                    case 2:
+                        respuesta = _a.sent();
+                        if (respuesta === 's') {
+                            this.generarInterfaz();
+                        }
+                        console.log('Generando clase...');
+                        this.generarClase();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        if (this.tipo === 'interfaz') {
+                            this.generarInterfaz();
+                            console.log('Generando interfaz...');
+                        }
+                        else if (this.tipo === 'modelo') {
+                            this.generarInterfaz();
+                            this.generarClaseORM();
+                        }
+                        _a.label = 4;
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
+                        if (accion === 'ls') {
+                            console.log(process.cwd());
+                        }
+                        else {
+                            console.log('¿Qué acción le gustaría ejecutar?');
+                        }
+                        _a.label = 6;
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Generador.prototype.hacerPregunta = function (query) {
+        var rl = readline_1.default.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+        return new Promise(function (resolve) { return rl.question(query, function (ans) {
+            rl.close();
+            resolve(ans);
+        }); });
     };
     Generador.prototype.escrituraSegura = function (dir, nombre, ext, data) {
         try {
-            if (!fs_1.default.existsSync(this.dirActual + "/" + this.nombreProyecto + dir)) {
-                fs_1.default.mkdirSync(this.dirActual + "/" + this.nombreProyecto + dir);
-                fs_1.default.writeFile(this.dirActual + "/" + this.nombreProyecto + dir + "/" + nombre + "." + ext, data, function (err) {
+            //si no existe el proyecto
+            var cdir = void 0;
+            if (this.puedoCrear) {
+                cdir = this.dirActual + "/" + this.nombreProyecto + dir;
+            }
+            else {
+                cdir = this.dirActual + "/" + dir;
+            }
+            if (!fs_1.default.existsSync("" + cdir)) {
+                fs_1.default.mkdirSync("" + cdir);
+                fs_1.default.writeFile(cdir + "/" + nombre + "." + ext, data, function (err) {
                     if (err) {
                         return console.log(err);
                     }
@@ -139,7 +202,7 @@ var Generador = /** @class */ (function () {
                 });
             }
             else {
-                fs_1.default.writeFile(this.dirActual + "/" + this.nombreProyecto + dir + "/" + nombre + "." + ext, data, function (err) {
+                fs_1.default.writeFile(cdir + "/" + nombre + "." + ext, data, function (err) {
                     if (err) {
                         return console.log(err);
                     }
@@ -163,6 +226,23 @@ var Generador = /** @class */ (function () {
             });
         }
     };
+    Generador.prototype.obtenerArchivoFRCTL = function () {
+        try {
+            var proyecto = require(this.dirActual + '/frctl.json');
+            this.nombreProyecto = proyecto.proyecto;
+            console.log('Proyecto actual: ' + proyecto.proyecto);
+            this.determinarAccion(this.accion);
+        }
+        catch (error) {
+            if (error.code == 'MODULE_NOT_FOUND') {
+                console.error("No existe un proyecto de FRACTAL en este directorio");
+                console.log('Use "frctl nuevo" para crear un proyecto.');
+                this.puedoCrear = true;
+                this.determinarAccion(this.accion);
+                return;
+            }
+        }
+    };
     /**
      * Genera un archivo JSON con información del proyecto
      */
@@ -179,19 +259,34 @@ var Generador = /** @class */ (function () {
         });
     };
     /**
-     * Genera una clase
+     * Genera una clase CONTROLADOR
      */
     Generador.prototype.generarClase = function () {
-        var targetDir = 'dist';
+        //asignar direccion
+        var claseDir = "/app/actions/" + this.moduloTipo;
+        var nombreClase = this.nombreTipo[0].toUpperCase() + this.nombreTipo.slice(1, this.nombreTipo.length).toLowerCase();
+        nombreClase = util_1.EstilizarNombreClase(nombreClase);
+        var dataClase = "\nexport class " + nombreClase + "Controller {\n    constructor() {};\n    // Agregar m\u00E9todos\n}\n        ";
+        this.escrituraSegura(claseDir, this.nombreTipo + '.controller', 'ts', dataClase);
     };
     /**
      * Genera una clase del ORM sequelize-typescript
      */
-    Generador.prototype.genClaseORM = function () { };
+    Generador.prototype.generarClaseORM = function () {
+        var claseDir = "/app/orm/" + this.moduloTipo;
+        var helperDir = "../../helpers/" + this.moduloTipo;
+        var dataORM = "\n\n    import { Model, Table, Column, DataType } from \"sequelize-typescript\";\n    import { " + this.nombreTipo.toUpperCase() + " } from '" + helperDir + "/" + this.nombreTipo + "';\n    @Table({\n        tableName:'" + this.nombreTipo.toLowerCase() + "'\n    })\n    export class M_" + this.nombreTipo.toUpperCase() + " extends Model<M_" + this.nombreTipo.toUpperCase() + "> implements " + this.nombreTipo.toUpperCase() + " {}";
+        this.escrituraSegura(claseDir, this.nombreTipo + '.model', 'ts', dataORM);
+    };
     /**
      * Genera una interfaz
      */
-    Generador.prototype.genInterfaz = function () { };
+    Generador.prototype.generarInterfaz = function () {
+        var interfazDir = "/app/helpers/" + this.moduloTipo;
+        var nombreInterfaz = this.nombreTipo.toUpperCase();
+        var dataInterfaz = "\nexport interface " + nombreInterfaz + "{\n\n}\n        ";
+        this.escrituraSegura(interfazDir, this.nombreTipo, 'ts', dataInterfaz);
+    };
     /**
      * Genera un archivo package.json
      */
@@ -218,6 +313,11 @@ var Generador = /** @class */ (function () {
             console.log("stderr: " + stderr);
         });
     };
+    /**
+     * Crear un proceso para descargar las dependencias de node.
+     * @todo Hacer que funcione
+     * @param dependencias Arreglo de dependencias de NPM
+     */
     Generador.prototype.descargarDependencias = function (dependencias) {
         return __awaiter(this, void 0, void 0, function () {
             var arr_deps, resultado, error_1;
