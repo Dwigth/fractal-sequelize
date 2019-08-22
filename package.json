@@ -1,6 +1,6 @@
 {
   "name": "fractal-sequelize-template-cli",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Generador de proyecto, clases e interfaces para sequelize-typescript",
   "main": "bin/index.js",
   "bin": {

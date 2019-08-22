@@ -163,6 +163,9 @@ var Generador = /** @class */ (function () {
                         if (accion === 'ls') {
                             console.log(process.cwd());
                         }
+                        else if (accion === 'test') {
+                            this.descargarDependencias();
+                        }
                         else {
                             console.log('¿Qué acción le gustaría ejecutar?');
                         }
@@ -320,35 +323,30 @@ var Generador = /** @class */ (function () {
      */
     Generador.prototype.descargarDependencias = function (dependencias) {
         return __awaiter(this, void 0, void 0, function () {
-            var arr_deps, resultado, error_1;
+            var n;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        arr_deps = dependencias.map(function (dep) {
-                            return new Promise(function (resolve, reject) {
-                                child_process_1.exec("npm install " + dep, function (error, stdout, stderr) {
-                                    if (error) {
-                                        console.error("exec error: " + error);
-                                        reject(error);
-                                    }
-                                    resolve({ stdout: stdout, stderr: stderr });
-                                    console.log("stdout: " + stdout);
-                                    console.log("stderr: " + stderr);
-                                });
-                            });
-                        });
-                        return [4 /*yield*/, Promise.all(arr_deps)];
-                    case 1:
-                        resultado = _a.sent();
-                        console.log(resultado);
-                        return [3 /*break*/, 3];
-                    case 2:
-                        error_1 = _a.sent();
-                        console.log(error_1);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                try {
+                    n = child_process_1.spawn('cmd', ['/C', 'start cmd.exe /k npm install exit']);
+                    // const arr_deps = dependencias.map(dep => {
+                    //     return new Promise((resolve, reject) => {
+                    //         exec(`npm install ${dep}`, (error, stdout, stderr) => {
+                    //             if (error) {
+                    //                 console.error(`exec error: ${error}`);
+                    //                 reject(error);
+                    //             }
+                    //             resolve({ stdout, stderr });
+                    //             console.log(`stdout: ${stdout}`);
+                    //             console.log(`stderr: ${stderr}`);
+                    //         });
+                    //     });
+                    // });
+                    // const resultado = await Promise.all(arr_deps);
+                    // console.log(resultado);
                 }
+                catch (error) {
+                    console.log(error);
+                }
+                return [2 /*return*/];
             });
         });
     };

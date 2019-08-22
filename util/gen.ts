@@ -1,5 +1,5 @@
 import fs from "fs";
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import readline from 'readline';
 import { Clases } from "../util/clases";
 import { Proyecto } from "fractal-sequelize-template-cli/interfaces/proyecto";
@@ -121,6 +121,8 @@ export class Generador {
             }
         } else if (accion === 'ls') {
             console.log(process.cwd());
+        } else if (accion === 'test') {
+            this.descargarDependencias()
         } else {
             console.log('¿Qué acción le gustaría ejecutar?');
         }
@@ -354,23 +356,9 @@ export interface ${nombreInterfaz}{
      * @todo Hacer que funcione
      * @param dependencias Arreglo de dependencias de NPM
      */
-    async descargarDependencias(dependencias: Array<string>) {
+    async descargarDependencias(dependencias?: Array<string>) {
         try {
-            const arr_deps = dependencias.map(dep => {
-                return new Promise((resolve, reject) => {
-                    exec(`npm install ${dep}`, (error, stdout, stderr) => {
-                        if (error) {
-                            console.error(`exec error: ${error}`);
-                            reject(error);
-                        }
-                        resolve({ stdout, stderr });
-                        console.log(`stdout: ${stdout}`);
-                        console.log(`stderr: ${stderr}`);
-                    });
-                });
-            });
-            const resultado = await Promise.all(arr_deps);
-            console.log(resultado);
+            let n = spawn('cmd', ['/C', 'start cmd.exe /k npm install exit']);
         } catch (error) {
             console.log(error);
         }

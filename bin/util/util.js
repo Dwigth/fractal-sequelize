@@ -6,7 +6,8 @@ function ThrowError(error) {
 }
 exports.ThrowError = ThrowError;
 /**
- * Quitar guiones bajos al nombre de la clase
+ * Quitar guiones bajos al nombre de la clase, si no tiene guiones retorna
+ * el mismo nombre
  * @param nombre Nombre a estilizar
  */
 function EstilizarNombreClase(nombre) {

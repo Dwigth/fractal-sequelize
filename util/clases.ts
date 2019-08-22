@@ -28,7 +28,9 @@ app.use(requestIp.mw());
 // app.use(compression());
 bootstrapRoutes(app);
 const server = http.createServer(app);
-server.listen(config.PORT);`,
+server.listen(config.PORT);
+console.log("Puerto ", config.PORT);
+console.log("Modo: ", (process.env.NODE_ENV != undefined) ? 'Producción' : 'Desarrollo');`,
     },
     {
         clase: 'orm.module',
@@ -36,7 +38,7 @@ server.listen(config.PORT);`,
         direccion: '/app/ORM',
         contenido: `
 import { Sequelize, ISequelizeConfig } from 'sequelize-typescript';
-import { _CONFIG } from "../../config/db.dev";
+import { CONFIG } from "../../config/db.dev";
 import { MODULE_CLASSES } from "./modulo/index";
 export default class ORM {
     private static _instance: ORM;
@@ -45,7 +47,7 @@ export default class ORM {
     private modules: string[] = [];
 
     constructor() {
-        this.config = _CONFIG;
+        this.config = CONFIG;
         this.seql = new Sequelize(this.config);
         this.modules = this.modules.concat(
             MODULE_CLASSES
@@ -88,7 +90,7 @@ index_router.get('/index',(req:Request,res:Response)=>{
         contenido: `
 //parsers
 import bodyParser from "body-parser";
-import index_router from "./inicio/inicio.routes";
+import {index_router} from "./inicio/inicio.routes";
 //interfaces
 import { Application, Request, Response } from 'express';
 const routes = [
@@ -127,15 +129,15 @@ const momentTz = moment.tz.setDefault(timezone);
 
 // Configuracion de desarrollo
 export const CONFIG: ISequelizeConfig = {
-    database: 'SIDIE',
-    username: 'postgres',
-    password: '123456789',
-    host: '10.14.120.62',
-    port: 5432,
-    dialect: 'postgres',
+    database: '',
+    username: '',
+    password: '',
+    host: '',
+    port: ,
+    dialect: '',
     timezone: timezone,
     pool: {
-        max: 40,
+        max: 10,
         min: 1,
         idle: 10000
     },
@@ -144,15 +146,15 @@ export const CONFIG: ISequelizeConfig = {
 
 // Configuracion de PREPRODUCCION
 // export const CONFIG: ISequelizeConfig = {
-//     database: 'SIDIE',
-//     username: 'enterprisedb',
-//     password: 'dbx9s1di36r0',
-//     host: '10.14.20.89',
-//     port: 5444,
-//     dialect: 'postgres',
+//     database: '',
+//     username: '',
+//     password: '',
+//     host: '',
+//     port: ,
+//     dialect: '',
 //     timezone: timezone,
 //     pool: {
-//         max: 40,
+//         max: 10,
 //         min: 1,
 //         idle: 10000
 //     },
@@ -161,15 +163,15 @@ export const CONFIG: ISequelizeConfig = {
 
 // Configuracion de PRODUCCION
 // export const CONFIG: ISequelizeConfig = {
-//     database: 'SIDIE',
-//     username: 'enterprisedb',
-//     password: 'db1143nd19',
-//     host: '10.14.1.85',
-//     port: 5444,
-//     dialect: 'postgres',
-//     timezone: timezone,
+//     database: '',
+//     username: '',
+//     password: '',
+//     host: '',
+//     port: ,
+//     dialect: '',
+//     timezone: ,
 //     pool: {
-//         max: 40,
+//         max: 10,
 //         min: 1,
 //         idle: 10000
 //     },
