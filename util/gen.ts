@@ -280,7 +280,7 @@ export interface ${nombreInterfaz}{
     "main": "",
     "scripts": {
         "start": "nodemon dev/app/server.js",
-        "serve": "set SECRET=123456789 && npm start",
+        "serve": "set SECRET=123456789 && npm start"
     },
     "author": "",
     "license": "MIT",
@@ -358,7 +358,7 @@ export interface ${nombreInterfaz}{
      */
     async descargarDependencias(dependencias?: Array<string>) {
         try {
-            let n = spawn('cmd', ['/C', 'start cmd.exe /k npm install exit']);
+            let n = spawn('cmd', ['/C', 'start cmd.exe /k npm install']);
         } catch (error) {
             console.log(error);
         }

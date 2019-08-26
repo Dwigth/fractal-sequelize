@@ -294,7 +294,7 @@ var Generador = /** @class */ (function () {
      * Genera un archivo package.json
      */
     Generador.prototype.generarPackage = function () {
-        var data = "\n{\n    \"name\": \"" + this.nombreProyecto + "\",\n    \"version\": \"0.0.1\",\n    \"description\": \"\",\n    \"main\": \"\",\n    \"scripts\": {\n        \"start\": \"nodemon dev/app/server.js\",\n        \"serve\": \"set SECRET=123456789 && npm start\",\n    },\n    \"author\": \"\",\n    \"license\": \"MIT\",\n    \"dependencies\": {\n        \"@types/bcrypt\": \"^3.0.0\",\n        \"@types/body-parser\": \"^1.17.0\",\n        \"@types/colors\": \"^1.2.1\",\n        \"@types/compression\": \"0.0.36\",\n        \"@types/cors\": \"^2.8.4\",\n        \"@types/express\": \"^4.17.0\",\n        \"@types/express-jwt\": \"0.0.41\",\n        \"@types/fs-extra\": \"^8.0.0\",\n        \"@types/helmet\": \"0.0.42\",\n        \"@types/html-pdf\": \"^2.1.2\",\n        \"@types/jsonwebtoken\": \"^8.3.0\",\n        \"@types/md5\": \"^2.1.33\",\n        \"@types/moment\": \"^2.13.0\",\n        \"@types/moment-timezone\": \"^0.5.10\",\n        \"@types/node\": \"^11.13.13\",\n        \"@types/node-schedule\": \"^1.2.3\",\n        \"@types/request-ip\": \"0.0.33\",\n        \"@types/sequelize\": \"^4.28.3\",\n        \"@types/socket.io\": \"^2.1.2\",\n        \"bcrypt\": \"^3.0.4\",\n        \"body-parser\": \"^1.18.3\",\n        \"colors\": \"^1.3.3\",\n        \"compression\": \"^1.7.4\",\n        \"cors\": \"^2.8.5\",\n        \"express\": \"^4.17.1\",\n        \"express-jwt\": \"^5.3.1\",\n        \"express-pdf\": \"^1.2.2\",\n        \"fs-extra\": \"^8.0.1\",\n        \"helmet\": \"^3.18.0\",\n        \"jsonwebtoken\": \"^8.4.0\",\n        \"md5\": \"^2.2.1\",\n        \"moment\": \"^2.24.0\",\n        \"moment-timezone\": \"^0.5.23\",\n        \"node-schedule\": \"^1.3.2\",\n        \"nodemon\": \"^1.19.1\",\n        \"pg\": \"^7.11.0\",\n        \"pg-hstore\": \"^2.3.3\",\n        \"reflect-metadata\": \"^0.1.13\",\n        \"request-ip\": \"^2.1.3\",\n        \"rootpath\": \"^0.1.2\",\n        \"sequelize\": \"^4.44.0\",\n        \"sequelize-cli\": \"^5.4.0\",\n        \"sequelize-typescript\": \"^0.6.11\",\n        \"var-clean\": \"^1.0.1\"\n    }\n}";
+        var data = "\n{\n    \"name\": \"" + this.nombreProyecto + "\",\n    \"version\": \"0.0.1\",\n    \"description\": \"\",\n    \"main\": \"\",\n    \"scripts\": {\n        \"start\": \"nodemon dev/app/server.js\",\n        \"serve\": \"set SECRET=123456789 && npm start\"\n    },\n    \"author\": \"\",\n    \"license\": \"MIT\",\n    \"dependencies\": {\n        \"@types/bcrypt\": \"^3.0.0\",\n        \"@types/body-parser\": \"^1.17.0\",\n        \"@types/colors\": \"^1.2.1\",\n        \"@types/compression\": \"0.0.36\",\n        \"@types/cors\": \"^2.8.4\",\n        \"@types/express\": \"^4.17.0\",\n        \"@types/express-jwt\": \"0.0.41\",\n        \"@types/fs-extra\": \"^8.0.0\",\n        \"@types/helmet\": \"0.0.42\",\n        \"@types/html-pdf\": \"^2.1.2\",\n        \"@types/jsonwebtoken\": \"^8.3.0\",\n        \"@types/md5\": \"^2.1.33\",\n        \"@types/moment\": \"^2.13.0\",\n        \"@types/moment-timezone\": \"^0.5.10\",\n        \"@types/node\": \"^11.13.13\",\n        \"@types/node-schedule\": \"^1.2.3\",\n        \"@types/request-ip\": \"0.0.33\",\n        \"@types/sequelize\": \"^4.28.3\",\n        \"@types/socket.io\": \"^2.1.2\",\n        \"bcrypt\": \"^3.0.4\",\n        \"body-parser\": \"^1.18.3\",\n        \"colors\": \"^1.3.3\",\n        \"compression\": \"^1.7.4\",\n        \"cors\": \"^2.8.5\",\n        \"express\": \"^4.17.1\",\n        \"express-jwt\": \"^5.3.1\",\n        \"express-pdf\": \"^1.2.2\",\n        \"fs-extra\": \"^8.0.1\",\n        \"helmet\": \"^3.18.0\",\n        \"jsonwebtoken\": \"^8.4.0\",\n        \"md5\": \"^2.2.1\",\n        \"moment\": \"^2.24.0\",\n        \"moment-timezone\": \"^0.5.23\",\n        \"node-schedule\": \"^1.3.2\",\n        \"nodemon\": \"^1.19.1\",\n        \"pg\": \"^7.11.0\",\n        \"pg-hstore\": \"^2.3.3\",\n        \"reflect-metadata\": \"^0.1.13\",\n        \"request-ip\": \"^2.1.3\",\n        \"rootpath\": \"^0.1.2\",\n        \"sequelize\": \"^4.44.0\",\n        \"sequelize-cli\": \"^5.4.0\",\n        \"sequelize-typescript\": \"^0.6.11\",\n        \"var-clean\": \"^1.0.1\"\n    }\n}";
         try {
             fs_1.default.writeFileSync(this.dirActual + "/" + this.nombreProyecto + "/package.json", data);
         }
@@ -326,22 +326,7 @@ var Generador = /** @class */ (function () {
             var n;
             return __generator(this, function (_a) {
                 try {
-                    n = child_process_1.spawn('cmd', ['/C', 'start cmd.exe /k npm install exit']);
-                    // const arr_deps = dependencias.map(dep => {
-                    //     return new Promise((resolve, reject) => {
-                    //         exec(`npm install ${dep}`, (error, stdout, stderr) => {
-                    //             if (error) {
-                    //                 console.error(`exec error: ${error}`);
-                    //                 reject(error);
-                    //             }
-                    //             resolve({ stdout, stderr });
-                    //             console.log(`stdout: ${stdout}`);
-                    //             console.log(`stderr: ${stderr}`);
-                    //         });
-                    //     });
-                    // });
-                    // const resultado = await Promise.all(arr_deps);
-                    // console.log(resultado);
+                    n = child_process_1.spawn('cmd', ['/C', 'start cmd.exe /k npm install']);
                 }
                 catch (error) {
                     console.log(error);
