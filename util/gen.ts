@@ -104,7 +104,6 @@ export class Generador {
             this.nombreTipo = this.argumentos[3];
             if (this.tipo === 'clase') {
                 //hay que preguntarle si quisiera crear una interfaz junto a su clase ORM
-
                 const respuesta = await this.hacerPregunta('¿le gustaría crear una interfaz tambien? s/n \n');
                 if (respuesta === 's') {
                     this.generarInterfaz();
@@ -122,7 +121,8 @@ export class Generador {
         } else if (accion === 'ls') {
             console.log(process.cwd());
         } else if (accion === 'test') {
-            this.descargarDependencias()
+            // this.descargarDependencias()
+            this.obtenerTSCONFIG();
         } else {
             console.log('¿Qué acción le gustaría ejecutar?');
         }
@@ -194,7 +194,7 @@ export class Generador {
         } catch (error) {
             if (error.code == 'MODULE_NOT_FOUND') {
                 console.error("No existe un proyecto de FRACTAL en este directorio");
-                console.log('Use "frctl nuevo" para crear un proyecto.');
+                console.log('Use "fcore nuevo" para crear un proyecto.');
                 this.puedoCrear = true;
                 this.determinarAccion(this.accion);
                 return;
@@ -364,6 +364,27 @@ export interface ${nombreInterfaz}{
         }
 
 
+    }
+
+    obtenerTSCONFIG() {
+        try {
+            console.log(this.dirActual + '/tsconfig.json');
+            let tsconfig = require(this.dirActual + '/tsconfig.json');
+            tsconfig = JSON.parse(tsconfig)
+            console.log(tsconfig.outDir);
+            console.log('hoa');
+
+        } catch (error) {
+            if (error.code == 'MODULE_NOT_FOUND') {
+                console.log(error);
+                console.error("No existe un archivo TSCONFIG en este directorio");
+                console.log('Use "frctl nuevo" para crear un proyecto.');
+                this.puedoCrear = true;
+                this.determinarAccion(this.accion);
+                return;
+            }
+
+        }
     }
 
 };

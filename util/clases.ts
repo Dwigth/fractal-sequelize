@@ -210,6 +210,27 @@ export const CONFIG: ISequelizeConfig = {
             "compilerOptions": {
               "baseUrl": ".",
               "paths": {
+                "@actions/*": [
+                    "app/actions/*"
+                  ],
+                  "@helpers/*": [
+                    "app/helpers/*"
+                  ],
+                  "@middlewares/*": [
+                    "app/middlewares/*"
+                  ],
+                  "@orm/*": [
+                    "app/orm/*"
+                  ],
+                  "@routes/*": [
+                    "app/routes/*"
+                  ],
+                  "@test/*": [
+                    "app/test/*"
+                  ],
+                  "@util/*": [
+                    "app/util/*"
+                  ],
                 "*": [
                   "types/*"
                 ]

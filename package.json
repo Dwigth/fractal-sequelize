@@ -4,7 +4,7 @@
   "description": "Generador de proyecto, clases e interfaces para sequelize-typescript",
   "main": "bin/index.js",
   "bin": {
-    "frctl": "bin/index.js"
+    "fcore": "bin/index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
